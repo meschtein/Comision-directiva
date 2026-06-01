@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CD · 23/05/26</title>
+<style>
+:root{
+  --bg:#F5F4F0;--surface:#fff;--border:#E0DED8;
+  --text:#1A1916;--text2:#6B6960;--text3:#9E9C94;
+  --c-term:#166534;--bg-term:#DCFCE7;
+  --c-proc:#1D4ED8;--bg-proc:#DBEAFE;
+  --c-pend:#92400E;--bg-pend:#FEF3C7;
+  --c-sin:#5F5E5A;--bg-sin:#EEEDE8;
+  --p0-c:#4338CA;--p0-bg:#EEF2FF;--p0-bd:#C7D2FE;
+  --p1-c:#0F766E;--p1-bg:#CCFBF1;--p1-bd:#99F6E4;
+  --p2-c:#B45309;--p2-bg:#FEF3C7;--p2-bd:#FDE68A;
+  --p3-c:#BE185D;--p3-bg:#FCE7F3;--p3-bd:#FBCFE8;
+  --p4-c:#6D28D9;--p4-bg:#EDE9FE;--p4-bd:#DDD6FE;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:56px}
+
+/* HEADER */
+.hdr{background:#1A1916;color:#fff;padding:14px 16px 12px;position:sticky;top:0;z-index:100}
+.hdr-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.hdr-top h1{font-size:15px;font-weight:600;letter-spacing:.02em}
+.hdr-top span{font-size:10px;opacity:.4;font-family:monospace}
+.legend{display:flex;flex-wrap:wrap;gap:10px}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.6)}
+.ldot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ld-term{background:#4ade80}.ld-proc{background:#60a5fa}.ld-pend{background:#fbbf24}.ld-sin{background:#9ca3af}
+
+/* FILTERS */
+.filters{background:#1A1916;padding:0 12px 12px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;position:sticky;top:80px;z-index:99}
+.filters::-webkit-scrollbar{display:none}
+.pill{flex-shrink:0;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.55);font-family:inherit;transition:all .15s}
+.pill.a-all{background:#fff;color:#1A1916;border-color:#fff}
+.pill.a-p0{background:var(--p0-bg);color:var(--p0-c);border-color:var(--p0-bd)}
+.pill.a-p1{background:var(--p1-bg);color:var(--p1-c);border-color:var(--p1-bd)}
+.pill.a-p2{background:var(--p2-bg);color:var(--p2-c);border-color:var(--p2-bd)}
+.pill.a-p3{background:var(--p3-bg);color:var(--p3-c);border-color:var(--p3-bd)}
+.pill.a-p4{background:var(--p4-bg);color:var(--p4-c);border-color:var(--p4-bd)}
+.pill.a-term{background:var(--bg-term);color:var(--c-term);border-color:#86efac}
+.pill.a-proc{background:var(--bg-proc);color:var(--c-proc);border-color:#93c5fd}
+.pill.a-pend{background:var(--bg-pend);color:var(--c-pend);border-color:#fcd34d}
+.pill.a-sin{background:var(--bg-sin);color:var(--c-sin);border-color:#d1d5db}
+
+/* STATS */
+.stats{display:flex;gap:7px;padding:12px 12px 4px}
+.stat{flex:1;background:var(--surface);border-radius:8px;padding:9px 8px 7px;text-align:center;border:1px solid var(--border)}
+.sn{font-size:20px;font-weight:600;line-height:1}
+.sl{font-size:9px;color:var(--text3);margin-top:3px;font-family:monospace;letter-spacing:.04em}
+.n-term{color:var(--c-term)}.n-proc{color:var(--c-proc)}.n-pend{color:var(--c-pend)}.n-sin{color:var(--c-sin)}
+
+/* GROUP */
+.grp-hdr{display:flex;align-items:center;gap:10px;background:#1A1916;color:#fff;padding:8px 12px;border-radius:8px 8px 0 0;margin:14px 10px 0}
+.grp-name{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-family:monospace}
+.grp-count{font-size:10px;opacity:.4;font-family:monospace}
+
+/* TABLE */
+.tbl-wrap{margin:0 10px 2px;border-radius:0 0 8px 8px;overflow:hidden;border:1px solid var(--border);border-top:none}
+table{width:100%;border-collapse:collapse;font-size:12px;background:var(--surface);table-layout:fixed}
+th{background:#2E2D29;color:rgba(255,255,255,.5);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;text-align:left;font-family:monospace;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.4;word-break:normal;overflow-wrap:break-word}
+tr:last-child td{border-bottom:none}
+tr.row{cursor:pointer}
+tr.row:hover td{background:#F5F3EE}
+tr.row.expanded td{background:#F8F6F1}
+.c-num{width:28px;color:var(--text3);font-family:monospace;font-size:11px}
+.c-tema{width:auto}
+.c-resp{width:90px}
+.c-est{width:84px}
+.c-arr{width:20px;color:var(--text3);font-size:13px;text-align:center}
+.t-title{font-weight:600;color:var(--text);font-size:12px;line-height:1.35}
+.t-sum{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4}
+.resp-wrap{display:flex;flex-wrap:wrap;gap:3px}
+.rc{font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;border:1px solid;white-space:nowrap}
+.rc-p0{color:var(--p0-c);background:var(--p0-bg);border-color:var(--p0-bd)}
+.rc-p1{color:var(--p1-c);background:var(--p1-bg);border-color:var(--p1-bd)}
+.rc-p2{color:var(--p2-c);background:var(--p2-bg);border-color:var(--p2-bd)}
+.rc-p3{color:var(--p3-c);background:var(--p3-bg);border-color:var(--p3-bd)}
+.rc-p4{color:var(--p4-c);background:var(--p4-bg);border-color:var(--p4-bd)}
+.sb{font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px;font-family:monospace;white-space:nowrap}
+.sb-term{background:var(--bg-term);color:var(--c-term)}
+.sb-proc{background:var(--bg-proc);color:var(--c-proc)}
+.sb-pend{background:var(--bg-pend);color:var(--c-pend)}
+.sb-sin{background:var(--bg-sin);color:var(--c-sin)}
+
+/* DETAIL ROW */
+tr.detail-row td{padding:0;border-bottom:1px solid var(--border);background:#FAFAF7}
+.detail-panel{padding:12px 14px 14px;display:none}
+tr.detail-row.open .detail-panel{display:block}
+.dp-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:8px;font-family:monospace;margin-bottom:10px}
+.dp-block{margin-bottom:10px}
+.dp-block:last-child{margin-bottom:0}
+.dp-label{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-family:monospace;margin-bottom:3px}
+.dp-text{font-size:12px;color:var(--text2);line-height:1.6}
+.dp-text.hi{color:var(--text);font-weight:500}
+.note-inp{width:100%;margin-top:10px;padding:7px 10px;font-size:12px;font-family:inherit;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text);resize:none;min-height:32px;line-height:1.5}
+.note-inp:focus{outline:none;border-color:#1A1916}
+.note-inp::placeholder{color:var(--text3)}
+
+.arrow{display:inline-block;transition:transform .2s}
+.expanded .arrow{transform:rotate(90deg)}
+.empty{text-align:center;padding:48px 16px;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-top"><h1>Comisión Directiva</h1><span>23/05/26</span></div>
+  <div class="legend">
+    <div class="leg"><div class="ldot ld-term"></div>Terminado</div>
+    <div class="leg"><div class="ldot ld-proc"></div>En proceso</div>
+    <div class="leg"><div class="ldot ld-pend"></div>Pendiente</div>
+    <div class="leg"><div class="ldot ld-sin"></div>Sin novedad</div>
+  </div>
+</div>
+
+<div class="filters" id="filters"></div>
+
+<div class="stats">
+  <div class="stat"><div class="sn" id="st-tot">0</div><div class="sl">TEMAS</div></div>
+  <div class="stat"><div class="sn n-term" id="st-term">0</div><div class="sl">TERMINADO</div></div>
+  <div class="stat"><div class="sn n-proc" id="st-proc">0</div><div class="sl">EN PROCESO</div></div>
+  <div class="stat"><div class="sn n-pend" id="st-pend">0</div><div class="sl">PENDIENTE</div></div>
+  <div class="stat"><div class="sn n-sin" id="st-sin">0</div><div class="sl">SIN NOV.</div></div>
+</div>
+
+<div id="board"></div>
+
+<script>
+var PF = ['Mario Schteingart','Soledad Perez','Alejandro Zalazar','Carla Bergamo','Patricia Labate'];
+var PN = ['Mario','Soledad','Alejandro','Carla','Patricia'];
+var SLABEL = {term:'Terminado',proc:'En proceso',pend:'Pendiente',sin:'Sin novedad'};
+var ICON   = {term:'✅',proc:'🔵',pend:'🟡',sin:'⚪'};
+
+var T=[
+  {g:'Legales',n:1,
+   t:'Status planos y habilitación House',
+   sum:'Reunión realizada el 30/5 con gestor. Pendiente segunda reunión con Lorena para clarificar pasos de habilitación.',
+   d:'El gestor nos envió liquidación a pagar a la caja de arquitectos y agrimensores por $5.6MM. Además hay que aportar $300.000 adicionales y pasó honorarios por $2.5MM.',
+   def:'Coordinar reunión próximo fin de semana con gestores Miguel Figueras y Lorena para aclarar en detalle los próximos pasos y temas aún pendientes.',
+   st:'Nos reunimos con el gestor el sábado 30/5. Aclaró ítems y pasos a seguir y monto. Haremos otra reunión con gestora Lorena para clarificar bien todo lo relacionado con la habilitación.',
+   resp:['Carla Bergamo'],s:'proc'},
+  {g:'Legales',n:2,
+   t:'Pago a Colegio Arquitectura',
+   sum:'Monto confirmado. Definido pagarlo la semana que viene para que no entre en esta expensa.',
+   d:'Se nos envió la liquidación con el detalle de cómo se calcula.',
+   def:'Le enviamos a Verónica G el detalle del cálculo para que pueda constatarlo y validaremos el detalle de m2. Hay que pagar antes del 30/5.',
+   st:'Quedó confirmado el monto a pagar. Definimos pagarlo la semana que viene (para que no entre en esta expensa y explicarlo en reunión de socios). No cambia el monto.',
+   resp:['Mario Schteingart'],s:'proc'},
+  {g:'Legales',n:3,
+   t:'Oficio Crupnik',
+   sum:'Oficio respondido con información validada por abogado.',
+   d:'Nos llegó un nuevo oficio judicial de Crupnik solicitando información sobre actas y detalle de proveedores.',
+   def:'Se coordinará respuesta con abogado tratando de que nos lleve el menor tiempo posible.',
+   st:'Se respondió oficio, enviando información validada por abogado.',
+   resp:['Mario Schteingart'],s:'term'},
+  {g:'Mantenimiento',n:4,
+   t:'Aire acondicionado',
+   sum:'Proveedor en revisión. Pendiente terminar de revisar motor de intendencia y guardia. Sin novedades.',
+   d:'El proveedor seleccionado comenzó con la revisión en profundidad de los aires del house. Tiene que terminar de revisar el motor de uno de ellos, el de la intendencia y guardia.',
+   def:'Monitorear continuidad de trabajo del técnico para que termine el mantenimiento y genere informe sobre trabajos adicionales a realizar.',
+   st:'Sin novedades.',
+   resp:['Alejandro Zalazar'],s:'sin'},
+  {g:'Mantenimiento',n:5,
+   t:'Baño Guardia',
+   sum:'Cuenta conciliada con proveedores. Sin obstáculos para comenzar.',
+   d:'Está planificado hacer el trabajo coordinado por Daniel y realizado por Franco. Debería comenzar esta semana. Faltaban terminar de comprar materiales.',
+   def:'Asegurar suministro de materiales y comienzo del trabajo.',
+   st:'Se concilió cuenta con proveedores y no debería haber obstáculos para suministro de materiales y avanzar.',
+   resp:['Alejandro Zalazar'],s:'proc'},
+  {g:'Mantenimiento',n:6,
+   t:'Luminarias',
+   sum:'Se avanzó con el trabajo. Dar prioridad esta semana — hay sectores muy oscuros.',
+   d:'Hay varias luminarias del sector lote 20-28 que no están funcionando debido a cortos en cables.',
+   def:'Dar prioridad a arreglo de luminarias ya que hay sectores muy oscuros.',
+   st:'Se avanzó con trabajo. Dar prioridad al tema en la semana.',
+   resp:['Soledad Perez','Alejandro Zalazar'],s:'pend'},
+  {g:'Mantenimiento',n:7,
+   t:'Canchas de tenis 5 y 6',
+   sum:'Sin información. Coordinar esquema de recuperación rápida con Chiquito y Daniel.',
+   d:'Están muy venidas a menos ambas canchas por falta de mantenimiento. Es necesario recuperarlas ya que se estará entrenando cada vez más en estas canchas.',
+   def:'Coordinar trabajo con Chiquito y Daniel para definir un esquema de recuperación rápida de las canchas.',
+   st:'Sin información.',
+   resp:['Alejandro Zalazar'],s:'sin'},
+  {g:'Mantenimiento',n:8,
+   t:'Reunión seguimiento con Daniel',
+   sum:'No se pudo hacer la reunión del finde. Coordinar esta semana.',
+   d:'Es importante poder tener un espacio de seguimiento de tema con Daniel, asegurando alineamiento de prioridades y monitoreo de ejecución de los temas definidos.',
+   def:'Coordinar reunión próximo finde.',
+   st:'No se pudo hacer. Coordinar reunión esta semana.',
+   resp:['Soledad Perez','Alejandro Zalazar'],s:'pend'},
+  {g:'Mantenimiento',n:9,
+   t:'Detalle de tareas empleados',
+   sum:'Info enviada hoy (base armada por Mario con Gogo).',
+   d:'Se le solicitó a Daniel tener detalle de tareas asignadas rutinariamente a los empleados así como tareas predefinidas días de lluvia. Aún no envió el detalle.',
+   def:'Enviar detalle armado oportunamente por Mario con Gogo como base para armado de nuevo esquema.',
+   st:'Se envió hoy info realizada anteriormente.',
+   resp:['Mario Schteingart'],s:'term'},
+  {g:'Seguridad',n:10,
+   t:'Sirenas',
+   sum:'Sin novedades. Validar lugar, esquema y costos. Torre central como opción.',
+   d:'Sirenas para que suene en todo el country ante un evento en coordinación con Troncos y La Pelegrina.',
+   def:'Validar lugar y esquema de colocación y costos asociados. Podría ser la torre central.',
+   st:'Sin novedades / sin información.',
+   resp:['Alejandro Zalazar','Patricia Labate'],s:'sin'},
+  {g:'Seguridad',n:11,
+   t:'Sistema de control de ingresos y egresos',
+   sum:'Sin novedades. Validar alternativas y confirmar si Troncos ya instaló algo similar.',
+   d:'El sistema presupuestado mediante un abono resolvería varios de los temas que están pendientes. Si bien no es lo ideal tener un abono, en este caso se justificaría.',
+   def:'Validar si hay algún otro sistema y costos. Confirmar si Troncos instaló el mismo y a qué precio y funcionalidad final.',
+   st:'Sin novedades / sin información.',
+   resp:['Alejandro Zalazar','Patricia Labate'],s:'sin'},
+  {g:'Seguridad',n:12,
+   t:'Puerta con Troncos',
+   sum:'Sin novedades. Validar cámaras e instrucciones de seguridad para ambos countries.',
+   d:'La puerta de Troncos debería quedar cerrada y abrirse por demanda en los horarios establecidos.',
+   def:'Validar que funcionen las cámaras con Troncos y que estén claras las instrucciones para la seguridad de ambos countries.',
+   st:'Sin novedades / sin información.',
+   resp:['Patricia Labate'],s:'sin'},
+  {g:'Empleados',n:13,
+   t:'Facundo',
+   sum:'Sin novedades. Antes de desvincular, confirmar que podemos operar con una persona menos.',
+   d:'Sigue sin responder adecuadamente. Se sondeó su salida pero no está interesado en salir. Antes de confirmar su desvinculación debemos confirmar que podemos realizar trabajos con una persona menos.',
+   def:'Validar alcance de tareas con Daniel y definir si avanzamos con la desvinculación o no.',
+   st:'Sin novedades / sin información.',
+   resp:['Mario Schteingart','Alejandro Zalazar'],s:'sin'},
+  {g:'Empleados',n:14,
+   t:'Valeria',
+   sum:'No se pudo avanzar. Socios se oponen a contratarla. Alejandro la verá para sondear incorporación.',
+   d:'No puede continuar en la situación actual (cobra $200.000). Hay socios que se oponen a que la contratemos. Tomarla como empleada tendría un costo de $250.000 adicionales (total $450.000).',
+   def:'Sondear si está interesada en incorporarse como empleada.',
+   st:'No se pudo avanzar. Alejandro la verá con ella.',
+   resp:['Mario Schteingart'],s:'pend'},
+  {g:'Empleados',n:15,
+   t:'Vestuario empleados',
+   sum:'Queda pendiente. Limpiar y pintar en días de lluvia antes de pensar en nuevo mobiliario.',
+   d:'El vestuario está sucio y mal mantenido. Hay temas para arreglar y mejorar pero debe también ocuparse el mismo personal de mantenerlo en orden. Se avanzó muy poco en el ordenamiento.',
+   def:'Aprovechar días con lluvia para mejorar el espacio. Limpiar, pintar y después ver si se requieren renovación de mobiliario. Facilitaremos los materiales.',
+   st:'Queda pendiente para más adelante.',
+   resp:['Mario Schteingart','Alejandro Zalazar'],s:'pend'},
+  {g:'Empleados',n:16,
+   t:'Horarios empleados',
+   sum:'Nadie debería entrar a las 7hs ni días de semana ni fines de semana. Validar horarios.',
+   d:'Sigue habiendo cierta discrepancia en los horarios de los empleados.',
+   def:'Clarificar horarios. Nadie debería entrar a las 7hs ni días de semana ni fines de semana.',
+   st:'Validar horarios.',
+   resp:['Alejandro Zalazar'],s:'pend'},
+  {g:'Empleados',n:17,
+   t:'Obra social Daniel',
+   sum:'Sin novedades. El reclamo lo debe iniciar Daniel ya que el plan está a su nombre.',
+   d:'No se está acreditando los aportes en el plan de salud. Dado que el plan está a nombre de Daniel, el reclamo lo debe realizar él.',
+   def:'Hacer seguimiento para que se efectivice la acreditación de aportes.',
+   st:'Sin novedades / sin información.',
+   resp:['Mario Schteingart'],s:'sin'},
+  {g:'Adm y Finanzas',n:18,
+   t:'Deudores morosos',
+   sum:'Denise contactó morosos sin respuesta. Mañana coordina envío de CD con abogado. Sin novedades en venta de lote 28.',
+   d:'Además de los casos legales, se debe intimar a Ivancevic y L68.',
+   def:'Coordinar con Denise seguimiento de deuda.',
+   st:'Se contactó Denise con los socios morosos y no tuvo respuesta. Mañana coordina con abogado envío de CD. No hubo novedades respecto a venta de lote 28 (Ivancevic).',
+   resp:['Mario Schteingart','Alejandro Zalazar'],s:'pend'},
+  {g:'Adm y Finanzas',n:19,
+   t:'Balance',
+   sum:'Borrador recibido. Faltan ajustes de incobrabilidad (lote 36) e impuestos. Debe terminarlo esta semana.',
+   d:'Debería estar terminado el balance. La contadora debía enviar el mismo antes de fin de mes.',
+   def:'Seguir a la contadora para que envíe el balance y tenerlo terminado para convocatoria a Asamblea.',
+   st:'La contadora envió un borrador que le faltaba un par de ajustes (incobrabilidad de lote 36 e impuestos). Debe terminarlo esta semana.',
+   resp:['Mario Schteingart'],s:'pend'},
+  {g:'Adm y Finanzas',n:20,
+   t:'Asamblea',
+   sum:'Falta cierre de balance. Asamblea prevista para fin de junio o comienzos de julio.',
+   d:'Deberíamos anunciar fecha de Asamblea lo antes posible.',
+   def:'Confirmado balance, planificamos la fecha.',
+   st:'Falta cierre de balance. La Asamblea quedaría para fin de junio, comienzos de julio.',
+   resp:['Mario Schteingart'],s:'pend'},
+  {g:'Adm y Finanzas',n:21,
+   t:'Cuota extraordinaria',
+   sum:'Se cobra en julio (junio ya tiene cuota SAC). A comunicar en reunión de socios.',
+   d:'Necesitamos cobrar cuota extraordinaria para pago de finalización de planos. Costo aprox $9MM.',
+   def:'Cobraremos la extraordinaria para julio, dado que para junio tendrá la cuota SAC.',
+   st:'A comunicar en reunión de socios.',
+   resp:[],s:'pend'},
+  {g:'Adm y Finanzas',n:22,
+   t:'Procedimiento de admisiones',
+   sum:'Cambio de rol: la comisión de Admisiones reemplaza a Denise en interacción con interesados. A enviar próxima semana.',
+   d:'Debemos cambiar la tarea de Denise por la de comisión de admisiones ya que Denise no es eficiente en este tema.',
+   def:'La comisión de Admisiones tendrá el rol de interacción con los interesados y propietarios.',
+   st:'A enviar próxima semana.',
+   resp:[],s:'pend'},
+  {g:'Adm y Finanzas',n:23,
+   t:'Administración — Denise',
+   sum:'Intimada a mayor rapidez. Falta coordinar reunión específica para evaluar situación y eventual reemplazo.',
+   d:'Denise está desbordada y no responde fluidamente.',
+   def:'Coordinar con Denise reunión para plantear el tema y eventualmente comenzar a pensar en reemplazo.',
+   st:'La intimamos a Denise a que tenga mayor rapidez en respuesta. Falta coordinar reunión específica con ella para validar temas puntuales.',
+   resp:['Mario Schteingart','Alejandro Zalazar'],s:'pend'},
+  {g:'Socios',n:24,
+   t:'Reunión de socios',
+   sum:'Reunión programada para el domingo 7/6. A comunicar el lunes 16.',
+   d:'Previo a la Asamblea es importante hacer una reunión de socios.',
+   def:'Haremos reunión de socios domingo 7/6.',
+   st:'A comunicar lunes 16.',
+   resp:['Soledad Perez'],s:'proc'},
+  {g:'Socios',n:25,
+   t:'Reclamo Papuz con Luna',
+   sum:'Luna puede mantener cerco. Se compromete a no cortar pasto fines de semana. Pendiente enviar email con lo acordado.',
+   d:'Se hizo reunión acordando que puede mantener el cerco, que debería crecer mientras no esté en Argentina, y Luna se compromete a no cortar pasto fines de semana y mantener prolijo su lote y cerco.',
+   def:'Enviar email con lo acordado.',
+   st:'Sin novedades / sin información.',
+   resp:['Soledad Perez'],s:'sin'},
+  {g:'Socios',n:26,
+   t:'Plantas Lucas',
+   sum:'Venció el plazo. Daniel debe intimar retiro.',
+   d:'Ya venció el plazo comprometido.',
+   def:'Daniel debe intimar retiro de plantas.',
+   st:'Asegurar que haya sacado las plantas.',
+   resp:['Soledad Perez'],s:'pend'},
+  {g:'Concesión Restaurant',n:27,
+   t:'Nueva concesión',
+   sum:'Mario se reunió con Alfredo. Está interesado. Jorge Edelstein continúa el seguimiento.',
+   d:'Reunión de Mario con Alfredo realizada y está interesado.',
+   def:'Jorge Edelstein seguirá el tema con Alfredo.',
+   st:'Sin novedades / sin información.',
+   resp:['Mario Schteingart'],s:'sin'},
+  {g:'Seguridad (reuniones ant.)',n:28,
+   t:'Cámaras externas',
+   sum:'Determinar si es cambio de cámaras, cableado o ambos. Cortar ramaje. Seguimiento con Daniel.',
+   d:'Ajustar cámaras externas. Hay que ver si es cambio de cámaras, problemas de cableado o ambos temas. Hay que cortar ramaje y poner brazo para separar de los cercos y ramas pegadas a los lotes.',
+   def:'Seguimiento con Daniel. Determinación exacta de qué hay que hacer en cada caso.',
+   st:'',resp:['Patricia Labate'],s:'pend'},
+  {g:'Seguridad (reuniones ant.)',n:29,
+   t:'Cámaras internas',
+   sum:'Avanzar una vez resueltas las cámaras externas.',
+   d:'Sirven para tener de respaldo y consulta ante eventos.',
+   def:'Resueltas cámaras externas avanzaremos con las cámaras internas.',
+   st:'',resp:['Alejandro Zalazar','Patricia Labate'],s:'pend'},
+  {g:'Seguridad (reuniones ant.)',n:30,
+   t:'Control de cámara en ingreso',
+   sum:'La cámara existente funciona bien y podría evitar que salga el vigilador. Armar comunicación.',
+   d:'La cámara existente en el ingreso funciona bien y podría evitar que salga el vigilador.',
+   def:'Armar comunicación para enviar. Empezaríamos a la noche.',
+   st:'',resp:['Patricia Labate'],s:'pend'},
+  {g:'Seguridad (reuniones ant.)',n:31,
+   t:'Padrón para Troncos',
+   sum:'Troncos necesita padrón actualizado. Confirmar qué datos relevar.',
+   d:'Troncos necesitaría padrón actualizado para que pueda subirse a su sistema.',
+   def:'Confirmar qué datos son necesarios relevar.',
+   st:'',resp:['Patricia Labate'],s:'pend'},
+  {g:'Seguridad (reuniones ant.)',n:32,
+   t:'Contratación asesor externo',
+   sum:'Surgió posibilidad de asesoría de La Pelegrina (Rambo). Coordinar pasos con Troncos.',
+   d:'En reunión con Troncos estaba la posibilidad de tener asesoría de persona de La Pelegrina (Rambo).',
+   def:'A coordinar con Troncos pasos a seguir.',
+   st:'',resp:['Patricia Labate'],s:'pend'},
+  {g:'Seguridad (reuniones ant.)',n:33,
+   t:'Publicación nuevo procedimiento',
+   sum:'Formalizar nuevo procedimiento de seguridad, validar internamente y difundir.',
+   d:'Debemos formalizar nuevo procedimiento de seguridad.',
+   def:'Confirmar procedimiento de seguridad, validar internamente y difundir.',
+   st:'',resp:['Patricia Labate'],s:'pend'}
+];
+
+var notes={}, filter='all', openDetail={};
+
+function pi(n){return PF.indexOf(n);}
+function fn(n){return n.split(' ')[0];}
+
+function getData(){
+  if(filter==='all') return T;
+  if(filter.charAt(0)==='s'){
+    var sk=filter.slice(1);
+    return T.filter(function(t){return t.s===sk;});
+  }
+  var full=PF[parseInt(filter)];
+  return T.filter(function(t){return t.resp.indexOf(full)>=0;});
+}
+
+function updateStats(d){
+  document.getElementById('st-tot').textContent=d.length;
+  document.getElementById('st-term').textContent=d.filter(function(t){return t.s==='term';}).length;
+  document.getElementById('st-proc').textContent=d.filter(function(t){return t.s==='proc';}).length;
+  document.getElementById('st-pend').textContent=d.filter(function(t){return t.s==='pend';}).length;
+  document.getElementById('st-sin').textContent=d.filter(function(t){return t.s==='sin';}).length;
+}
+
+function respHtml(resp){
+  if(!resp||!resp.length) return '<span style="color:var(--text3);font-size:11px">—</span>';
+  return '<div class="resp-wrap">'+resp.map(function(r){
+    return '<span class="rc rc-p'+pi(r)+'">'+fn(r)+'</span>';
+  }).join('')+'</div>';
+}
+
+function detailHtml(t){
+  return '<div class="detail-panel" id="dp-'+t.n+'">'+
+    '<span class="dp-badge sb-'+t.s+'">'+ICON[t.s]+' '+SLABEL[t.s]+'</span>'+
+    '<div class="dp-block"><div class="dp-label">Detalle</div><div class="dp-text">'+t.d+'</div></div>'+
+    '<div class="dp-block"><div class="dp-label">Definición / acción</div><div class="dp-text hi">'+t.def+'</div></div>'+
+    (t.st?'<div class="dp-block"><div class="dp-label">Estado actual</div><div class="dp-text">'+t.st+'</div></div>':'')+
+    '<textarea class="note-inp" placeholder="Anotación..." rows="1" oninput="saveNote('+t.n+',this)">'+(notes[t.n]||'')+'</textarea>'+
+  '</div>';
+}
+
+function render(){
+  var d=getData();
+  updateStats(d);
+  var b=document.getElementById('board');
+  if(!d.length){b.innerHTML='<div class="empty">Sin temas para este filtro.</div>';return;}
+  var groups=[];
+  d.forEach(function(t){if(groups.indexOf(t.g)<0)groups.push(t.g);});
+  b.innerHTML=groups.map(function(g){
+    var items=d.filter(function(t){return t.g===g;});
+    var rows=items.map(function(t){
+      var open=!!openDetail[t.n];
+      return '<tr class="row'+(open?' expanded':'')+'" onclick="toggleDetail('+t.n+')">'+
+          '<td class="c-num">'+t.n+'</td>'+
+          '<td class="c-tema"><div class="t-title">'+t.t+'</div><div class="t-sum">'+t.sum+'</div></td>'+
+          '<td class="c-resp">'+respHtml(t.resp)+'</td>'+
+          '<td class="c-est"><span class="sb sb-'+t.s+'">'+SLABEL[t.s]+'</span></td>'+
+          '<td class="c-arr"><span class="arrow">'+(open?'&#8964;':'&#8250;')+'</span></td>'+
+        '</tr>'+
+        '<tr class="detail-row'+(open?' open':'')+'">'+
+          '<td colspan="5">'+detailHtml(t)+'</td>'+
+        '</tr>';
+    }).join('');
+    return '<div class="grp-hdr">'+
+        '<span class="grp-name">'+g+'</span>'+
+        '<span class="grp-count">'+items.length+' temas</span>'+
+      '</div>'+
+      '<div class="tbl-wrap"><table>'+
+        '<thead><tr>'+
+          '<th class="c-num">#</th>'+
+          '<th class="c-tema">Tema / resumen</th>'+
+          '<th class="c-resp">Responsable</th>'+
+          '<th class="c-est">Estado</th>'+
+          '<th class="c-arr"></th>'+
+        '</tr></thead>'+
+        '<tbody>'+rows+'</tbody>'+
+      '</table></div>';
+  }).join('');
+  // restore textarea heights
+  document.querySelectorAll('.note-inp').forEach(function(ta){
+    if(ta.value){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}
+  });
+}
+
+function toggleDetail(n){
+  openDetail[n]=!openDetail[n];
+  render();
+  if(openDetail[n]){
+    setTimeout(function(){
+      var el=document.getElementById('dp-'+n);
+      if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});
+    },40);
+  }
+}
+
+function saveNote(n,el){
+  notes[n]=el.value;
+  el.style.height='auto';el.style.height=el.scrollHeight+'px';
+}
+
+function setFilter(f,cls,el){
+  filter=f;
+  document.querySelectorAll('.pill').forEach(function(b){b.className='pill';});
+  el.className='pill '+cls;
+  render();
+}
+
+function buildFilters(){
+  var f=document.getElementById('filters');
+  function btn(label,fval,cls){
+    var b=document.createElement('button');
+    b.className='pill'+(fval==='all'?' a-all':'');
+    b.textContent=label;
+    b.onclick=function(){setFilter(fval,cls,b);};
+    f.appendChild(b);
+  }
+  btn('Todos','all','a-all');
+  PN.forEach(function(p,i){btn(p,String(i),'a-p'+i);});
+  btn('Terminado','sterm','a-term');
+  btn('En proceso','sproc','a-proc');
+  btn('Pendiente','spend','a-pend');
+  btn('Sin novedad','ssin','a-sin');
+}
+
+buildFilters();
+render();
+</script>
+</body>
+</html>
